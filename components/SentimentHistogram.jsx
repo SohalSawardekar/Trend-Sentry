@@ -12,6 +12,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Sector,
 } from "recharts";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ const SentimentDashboard = () => {
   const [filterDate, setFilterDate] = useState("");
   const [emotionData, setEmotionData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(null);
 
   const COLORS = [
     "#FF5733",
@@ -32,10 +34,8 @@ const SentimentDashboard = () => {
     "#F1C40F",
     "#E74C3C",
   ];
-  const emotions = ["sadness", "joy", "love", "anger", "fear", "surprise"];
 
   useEffect(() => {
-    // Generate dummy data for sentiment
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 100);
 
@@ -55,14 +55,11 @@ const SentimentDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (filterDate) {
-      setFilteredData(data.filter((entry) => entry.date === filterDate));
-    } else {
-      setFilteredData(data);
-    }
+    setFilteredData(
+      filterDate ? data.filter((entry) => entry.date === filterDate) : data
+    );
   }, [filterDate, data]);
 
-  // Fetch emotion data from API and scale values
   useEffect(() => {
     const fetchEmotionData = async () => {
       try {
@@ -70,20 +67,14 @@ const SentimentDashboard = () => {
         const json = await response.json();
 
         if (response.ok) {
-          // Aggregate emotion values
           const aggregatedData = json.reduce((acc, entry) => {
-            if (acc[entry.emotion]) {
-              acc[entry.emotion] += entry.value;
-            } else {
-              acc[entry.emotion] = entry.value;
-            }
+            acc[entry.emotion] = (acc[entry.emotion] || 0) + entry.value;
             return acc;
           }, {});
 
-          // Convert aggregated object into array & scale values
           const processedData = Object.keys(aggregatedData).map((key) => ({
             name: key,
-            value: aggregatedData[key] * 100, // Scale to 0-100
+            value: aggregatedData[key] * 100,
           }));
 
           setEmotionData(processedData);
@@ -100,7 +91,6 @@ const SentimentDashboard = () => {
 
   return (
     <div className="w-full p-6 space-y-6">
-      {/* Sentiment Bar Graph */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,7 +103,7 @@ const SentimentDashboard = () => {
           <CardContent className="flex flex-col items-center w-full h-[500px]">
             <Input
               type="date"
-              className="mb-4 w-1/4"
+              className="mb-4 w-[11%]"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
             />
@@ -121,15 +111,8 @@ const SentimentDashboard = () => {
               <BarChart data={filteredData}>
                 <XAxis dataKey="date" stroke="#555" tick={{ fontSize: 12 }} />
                 <YAxis stroke="#555" tick={{ fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: "8px",
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12, paddingBottom: 10 }} />
+                <Tooltip />
+                <Legend />
                 <Bar
                   dataKey="positive"
                   fill="#4CAF50"
@@ -154,7 +137,6 @@ const SentimentDashboard = () => {
         </Card>
       </motion.div>
 
-      {/* Emotion Pie Chart */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -173,70 +155,28 @@ const SentimentDashboard = () => {
                   cy="50%"
                   innerRadius={70}
                   outerRadius={120}
-                  fill="#8884d8"
                   dataKey="value"
                   paddingAngle={5}
                   label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(1)}%`
+                    `${name} (${(percent * 100).toFixed(0)}%)`
                   }
                 >
-                  {emotionData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                  {emotionData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
+
                 <Tooltip
                   formatter={(value) => `${value.toFixed(2)} mentions`}
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: "8px",
-                    border: "1px solid #ddd",
-                    padding: "10px",
-                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Sentiment & Emotion Summary */}
-      <div className="grid grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <Card className="shadow-md border border-gray-300 p-4">
-            <CardHeader className="text-xl font-semibold">
-              📢 Sentiment Summary
-            </CardHeader>
-            <CardContent>
-              <p>
-                Sentiments are categorized into Positive, Neutral, and Negative.
-                This helps brands understand public perception in real time.
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <Card className="shadow-md border border-gray-300 p-4">
-            <CardHeader className="text-xl font-semibold">
-              😊 Emotion Summary
-            </CardHeader>
-            <CardContent>
-              <p>
-                Emotions like Happiness, Sadness, Anger, and Surprise provide
-                deeper insights into customer feelings and reactions.
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
     </div>
   );
 };

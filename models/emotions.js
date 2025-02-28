@@ -16,6 +16,7 @@ const emotionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Emotion = mongoose.model("Emotion", emotionSchema);
+const Emotion =
+  mongoose.models.Emotion || mongoose.model("Emotion", emotionSchema);
 
 export default Emotion;
