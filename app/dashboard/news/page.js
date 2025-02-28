@@ -1,9 +1,14 @@
-import React from 'react'
+import NewsCarousel from "@/components/news";
+import Navbar from "@/components/navbar";
+import React from "react";
 
 const page = () => {
   return (
-    <div>page</div>
-  )
-}
+    <>
+      <Navbar />
+      <NewsCarousel />
+    </>
+  );
+};
 
-export default page
+export default page;
