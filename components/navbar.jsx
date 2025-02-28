@@ -16,11 +16,13 @@ import { FaBars, FaUserCircle } from "react-icons/fa";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import LoadingScreen from "./loadingScreen";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   useEffect(() => {
     // Simulate a loading delay
@@ -79,17 +81,14 @@ export default function Navbar() {
               className="p-0 text-black rounded-full hover:cursor-pointer"
             >
               <Avatar>
-                <AvatarImage
-                  src="/path-to-profile-image.jpg"
-                  alt="User Profile"
-                />
+                <AvatarImage src={session?.user?.picture} alt="User Profile" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href="/profile">Profile</Link>
+              <Link href="/dashboard/profile">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>
@@ -144,7 +143,7 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
+                  <Link href="/dashboard/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings">Settings</Link>

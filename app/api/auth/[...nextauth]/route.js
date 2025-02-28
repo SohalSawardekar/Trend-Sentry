@@ -23,27 +23,22 @@ export const authOptions = {
       },
       async authorize(credentials) {
         await connectToDB();
-
         const existingUser = await User.findOne({ email: credentials.email });
 
-        if (!existingUser) {
-          throw new Error("User not found.");
-        }
+        if (!existingUser) return null;
 
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           existingUser.password
         );
 
-        if (!isValidPassword) {
-          throw new Error("Invalid password.");
-        }
+        if (!isValidPassword) return null;
 
         return {
-          id: existingUser._id.toString(),
+          id: existingUser._id.toString(), // ✅ Use MongoDB ObjectId
           email: existingUser.email,
           name: existingUser.name,
-          role: existingUser.role || "user",
+          profile: existingUser.profile || "",
         };
       },
     }),
@@ -52,45 +47,45 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        const dbUser = await User.findOne({ email: user.email }); // Fetch user from DB
+        token.id = dbUser ? dbUser._id.toString() : user.id; // ✅ Ensure ObjectId is used
         token.email = user.email;
         token.name = user.name;
-        token.role = user.role || "user";
+        token.profile = user.profile || "";
       }
       return token;
     },
+
     async session({ session, token }) {
       session.user = {
         id: token.id,
         email: token.email,
         name: token.name,
-        role: token.role,
+        picture: token.profile,
       };
       return session;
     },
-    // async signIn({ account, profile }) {
-    //   if (account.provider === "google") {
-    //     await connectToDB();
 
-    //     let user = await User.findOne({ email: profile.email });
+    async signIn({ account, profile }) {
+      if (account.provider === "google") {
+        await connectToDB();
 
-    //     if (!user) {
-    //       console.log("Creating a new Google user");
-    //       user = await User.create({
-    //         name: profile.name,
-    //         email: profile.email,
-    //         googleId: profile.sub, // Ensure `googleId` exists in the schema
-    //         profile: profile.picture, // Store profile image
-    //         dateJoined: new Date(),
-    //         lastLoggedIn: new Date(),
-    //       });
-    //     } else {
-    //       user.lastLoggedIn = new Date();
-    //       await user.save();
-    //     }
-    //   }
-    //   return true;
-    // },
+        let user = await User.findOne({ email: profile.email });
+
+        if (!user) {
+          console.log("Creating a new Google user");
+          user = await User.create({
+            name: profile.name,
+            email: profile.email,
+            googleId: profile.sub,
+            profile: profile.picture,
+          });
+        }
+
+        return true;
+      }
+      return true;
+    },
   },
 };
 
