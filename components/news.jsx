@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LoadingScreen from "./loadingScreen";
 import axios from "axios";
+import News from "@/models/news"; // Importing static news data
 
 const NewsCarousel = ({ tag = "everything", date = new Date() }) => {
   const [articles, setArticles] = useState([]);
@@ -20,16 +21,23 @@ const NewsCarousel = ({ tag = "everything", date = new Date() }) => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        // Fetch from your own Next.js API route
+        // ✅ Fetch from News API (currently commented out)
+        /*
         const apiUrl = `https://newsapi.org/v2/everything?q=${tag}&from=${date}&sortBy=publishedAt&apiKey=69dbf9de0aa9414fa90747744627fda0`;
         const response = await axios.get(apiUrl, {
           method: "GET",
         });
+
         if (response.data.error) {
           throw new Error(response.data.error);
         }
+
         setArticles(response.data.articles || []);
         setLen(response.data.articles.length);
+        */
+
+        // ✅ Fallback to static data
+        setArticles(News.articles);
       } catch (error) {
         console.error("Error fetching news:", error);
         setError(error.message);
@@ -46,9 +54,9 @@ const NewsCarousel = ({ tag = "everything", date = new Date() }) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4">
-      <Carousel>
+      <Carousel orientation="vertical">
         <CarouselContent>
-          {articles.slice(0, 10).map((article, index) => (
+          {articles.slice(0, News.articles.length).map((article, index) => (
             <CarouselItem
               key={index}
               className="p-2 transition-opacity duration-500 ease-in-out"
