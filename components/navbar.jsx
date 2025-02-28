@@ -22,13 +22,31 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Simulate a loading delay
+    if (status === "authenticated" && session?.user?.email) {
+      async function fetchUserData() {
+        try {
+          const res = await fetch(`/api/user/${session.user.email}`);
+          const data = await res.json();
+          if (res.ok) {
+            setUser(data.data);
+          } else {
+            console.error("Failed to fetch user:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+      fetchUserData();
+    }
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [session, status]);
 
   const navLinks = [
     { name: "Home", path: "/dashboard" },
@@ -81,7 +99,10 @@ export default function Navbar() {
               className="p-0 text-black rounded-full hover:cursor-pointer"
             >
               <Avatar>
-                <AvatarImage src={session?.user?.picture} alt="User Profile" />
+                <AvatarImage
+                  src={user?.profile || "/default-avatar.png"}
+                  alt="Profile Picture"
+                />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </Button>

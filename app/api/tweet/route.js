@@ -6,7 +6,6 @@ export async function GET(req) {
   try {
     await connectToDB();
     const tweets = await Tweets.find({}).lean();
-    console.log(tweets)
 
     if (tweets.length === 0) {
       return NextResponse.json(
