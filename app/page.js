@@ -1,8 +1,8 @@
-import LandingPage from "@/components/landingPage";
+import AuthWrapper from "@/components/wrapper";
 import React from "react";
 
 const page = () => {
-  return <LandingPage />;
+  return <AuthWrapper />;
 };
 
 export default page;
