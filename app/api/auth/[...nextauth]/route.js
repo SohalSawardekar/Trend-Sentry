@@ -27,8 +27,7 @@ export const authOptions = {
         const existingUser = await User.findOne({ email: credentials.email });
 
         if (!existingUser) {
-          console.error("User not found.");
-          return null;
+          throw new Error("User not found.");
         }
 
         const isValidPassword = await bcrypt.compare(
@@ -37,15 +36,14 @@ export const authOptions = {
         );
 
         if (!isValidPassword) {
-          console.error("Invalid password.");
-          return null;
+          throw new Error("Invalid password.");
         }
 
         return {
           id: existingUser._id.toString(),
           email: existingUser.email,
-          username: existingUser.username,
-          role: existingUser.role,
+          name: existingUser.name,
+          role: existingUser.role || "user",
         };
       },
     }),
@@ -56,22 +54,43 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.username = user.username;
-        token.role = user.role;
+        token.name = user.name;
+        token.role = user.role || "user";
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = session.user || {}; // Ensure session.user is defined
-      session.user.id = token.id;
-      session.user.email = token.email;
-      session.user.username = token.username;
-      session.user.role = token.role;
+      session.user = {
+        id: token.id,
+        email: token.email,
+        name: token.name,
+        role: token.role,
+      };
       return session;
     },
-  },
-  pages: {
-    signIn: "/login",
+    // async signIn({ account, profile }) {
+    //   if (account.provider === "google") {
+    //     await connectToDB();
+
+    //     let user = await User.findOne({ email: profile.email });
+
+    //     if (!user) {
+    //       console.log("Creating a new Google user");
+    //       user = await User.create({
+    //         name: profile.name,
+    //         email: profile.email,
+    //         googleId: profile.sub, // Ensure `googleId` exists in the schema
+    //         profile: profile.picture, // Store profile image
+    //         dateJoined: new Date(),
+    //         lastLoggedIn: new Date(),
+    //       });
+    //     } else {
+    //       user.lastLoggedIn = new Date();
+    //       await user.save();
+    //     }
+    //   }
+    //   return true;
+    // },
   },
 };
 

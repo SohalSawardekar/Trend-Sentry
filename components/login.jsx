@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
@@ -105,7 +105,7 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="flex items-center  space-x-2 mt-[1rem]"
-              onClick={signIn}
+              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             >
               <FcGoogle size={20} />
               <span>Login with Google</span>
