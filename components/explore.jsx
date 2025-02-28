@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "./ui/textarea";
@@ -14,63 +15,27 @@ const SentimentAnalysis = () => {
   const handleSubmit = async () => {
     if (!input) return;
     setLoading(true);
-
     try {
-      const response = await fetch(
+      const { data } = await axios.post(
         "https://itsprotesilaus-trend-sentry.hf.space/predict",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify([{ id: 1, text: input }]), // Use input value
-        }
+        [{ id: 1, text: input }],
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log(
-          `Failed to fetch sentiment analysis: ${response.status} ${response.statusText} - ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-      const analysis = data.results[0]; // Extract the first result
-
+      const analysis = data.results[0];
       setResult({
         sentiment: analysis.sentiment.label,
         emotion: analysis.emotion.label,
-        sentimentScore: (analysis.sentiment.score * 100).toFixed(2), // Convert to percentage
-        emotionScores: analysis.emotion.raw_scores.map((score) =>
-          (score * 100).toFixed(2)
-        ), // Convert raw scores to percentages
+        sentimentScore: (analysis.sentiment.score * 100).toFixed(2),
       });
 
-      // Fetch recommendation based on sentiment and emotion
-      const recommendationResponse = await fetch("/api/gemini", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          input,
-          sentiment: analysis.sentiment.label,
-          emotion: analysis.emotion.label,
-        }),
+      const { data: recommendationData } = await axios.post("/api/gemini", {
+        input,
+        sentiment: analysis.sentiment.label,
+        emotion: analysis.emotion.label,
       });
 
-      if (!recommendationResponse.ok) {
-        const errorText = await recommendationResponse.text();
-        console.log(
-          `Failed to fetch recommendation: ${recommendationResponse.status} ${recommendationResponse.statusText} - ${errorText}`
-        );
-      }
-
-      const recommendationData = await recommendationResponse.json();
-      setRecommendation({
-        recommendation: recommendationData.recommendation,
-        rationale: recommendationData.rationale,
-      });
+      setRecommendation(recommendationData);
     } catch (error) {
       console.error("Error analyzing sentiment:", error);
       setResult(null);
@@ -104,7 +69,7 @@ const SentimentAnalysis = () => {
           <div className="flex justify-between mt-6">
             <Button
               variant="outline"
-              className="bg-red-500 text-white hover:bg-red-600 hover:text-white"
+              className="bg-red-500 text-white hover:bg-red-600"
               onClick={handleCancel}
             >
               Cancel
@@ -144,7 +109,7 @@ const SentimentAnalysis = () => {
           {recommendation && (
             <div className="mt-6 text-center text-lg font-medium text-gray-800 bg-gray-200 p-4 rounded-md">
               <div>
-                <span className="font-bold">Suggestions </span>
+                <span className="font-bold">Suggestions: </span>
                 <br />
                 <span className="font-medium">
                   {recommendation.recommendation}

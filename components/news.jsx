@@ -1,57 +1,96 @@
 "use client";
 
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import LoadingScreen from "./loadingScreen";
+import axios from "axios";
 
-const NewsCarousel = () => {
-  const tweets = [
-    "🚀 Breaking: Market surges as tech stocks rally!",
-    "💰 Investor sentiment remains mixed amid economic uncertainty.",
-    "📈 Crypto market sees significant gains, Bitcoin crosses $50k!",
-    "📉 Global inflation concerns continue to impact stock prices.",
-    "🌟 New IPO announced: A promising startup enters the market!",
-    "🏦 Federal Reserve hints at possible interest rate changes.",
-    "🌱 Experts predict a strong year ahead for renewable energy stocks.",
-    "📊 Tech giants report record earnings, driving Nasdaq higher.",
-    "🔍 Retail investors are reshaping the stock market landscape.",
-    "📌 Major hedge funds adjust portfolios in response to market trends.",
-  ];
+const NewsCarousel = ({ tag = "everything", date = new Date() }) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [len, setLen] = useState(0);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        // Fetch from your own Next.js API route
+        const apiUrl = `https://newsapi.org/v2/everything?q=${tag}&from=${date}&sortBy=publishedAt&apiKey=69dbf9de0aa9414fa90747744627fda0`;
+        const response = await axios.get(apiUrl, {
+          method: "GET",
+        });
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
+        setArticles(response.data.articles || []);
+        setLen(response.data.articles.length);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [tag, date]);
+
+  if (loading) return <LoadingScreen />;
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <Card className="w-[50%] p-6 shadow-lg border border-gray-300 bg-white">
-        <CardHeader className="text-2xl font-semibold text-center mb-4">
-          📰 Latest Market News
-        </CardHeader>
-        <CardContent className="flex flex-col items-center">
-          <Carousel
-            orientation="vertical"
-            className="h-80 w-full overflow-hidden relative"
-          >
-            <CarouselPrevious className="absolute top-0 left-1/2 transform -translate-x-1/2" />
-            <CarouselContent className="h-80 flex flex-col">
-              {tweets.map((tweet, index) => (
-                <CarouselItem
-                  key={index}
-                  className="h-80 flex justify-center items-center"
-                >
-                  <Card className="p-6 shadow-lg border border-gray-200 rounded-lg text-center w-96">
-                    <p className="text-lg text-gray-800">{tweet}</p>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselNext className="absolute bottom-0 left-1/2 transform -translate-x-1/2" />
-          </Carousel>
-        </CardContent>
-      </Card>
+    <div className="w-full max-w-3xl mx-auto p-4">
+      <Carousel>
+        <CarouselContent>
+          {articles.slice(0, 10).map((article, index) => (
+            <CarouselItem
+              key={index}
+              className="p-2 transition-opacity duration-500 ease-in-out"
+            >
+              <Card className="shadow-lg rounded-xl overflow-hidden">
+                {article.urlToImage && (
+                  <img
+                    src={article.urlToImage}
+                    alt={article.title}
+                    className="w-full h-64 object-cover"
+                  />
+                )}
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-semibold mb-2 text-center">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 text-center line-clamp-3 mb-3">
+                    {article.description}
+                  </p>
+                  <p className="text-xs text-gray-500 text-center mb-2">
+                    Source: {article.source.name}
+                  </p>
+                  <p className="text-xs text-gray-500 text-center mb-3">
+                    Published: {new Date(article.publishedAt).toLocaleString()}
+                  </p>
+                  <div className="flex justify-center">
+                    <Button asChild>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Read More
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </div>
   );
 };
