@@ -4,10 +4,18 @@ import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
   try {
-    const id = (await params).id;
     await connectToDB();
 
-    const userData = await User.findById(id).lean();
+    const email = (await params).id; // Extract email from params
+
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: "Email is required" },
+        { status: 400 }
+      );
+    }
+
+    const userData = await User.findOne({ email }).lean(); // Query by email
 
     if (!userData) {
       return NextResponse.json(

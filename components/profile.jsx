@@ -12,13 +12,17 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log(session?.user?.id);
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.email) {
       async function fetchUserData() {
         try {
-          const res = await fetch(`/api/user/${session?.user?.id}`);
+          const res = await fetch(`/api/user/${session.user.email}`);
           const data = await res.json();
-          if (res.ok) setUser(data);
+
+          if (res.ok) {
+            setUser(data.data); // ✅ Store only `data.data`
+          } else {
+            console.error("Failed to fetch user:", data.message);
+          }
         } catch (error) {
           console.error("Error fetching user data:", error);
         } finally {
@@ -42,7 +46,7 @@ export default function ProfilePage() {
           ) : (
             <Avatar className="w-24 h-24">
               <AvatarImage
-                src={user?.image || "/default-avatar.png"}
+                src={user?.profile || "/default-avatar.png"} // ✅ Corrected profile image
                 alt="Profile Photo"
               />
               <AvatarFallback>

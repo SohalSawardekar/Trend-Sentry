@@ -12,7 +12,7 @@ export default function AuthWrapper({ children }) {
   useEffect(() => {
     if (status === "loading") return; // Wait until session is determined
     if (!session) {
-      router.push(""); // Redirect if not authenticated
+      router.push("/overview");
     } else {
       router.push("/dashboard"); // Redirect to dashboard if authenticated
     }
