@@ -59,7 +59,11 @@ const SentimentAnalysis = () => {
           </div>
           {result && (
             <div className="mt-6 text-center text-lg font-medium text-gray-800 bg-gray-200 p-4 rounded-md">
-              {result}
+              {result === "Positive" ? (
+                <div className="text-green-500 font-bold">Positive</div>
+              ) : (
+                <div className="text-red-600 font-bold">Negative</div>
+              )}
             </div>
           )}
         </CardContent>
