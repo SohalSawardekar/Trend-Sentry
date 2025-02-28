@@ -17,7 +17,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col items-center w-full">
       {/* Navbar */}
-      <nav className="bg-slate-300 text-white px-6 py-4 flex justify-between items-center w-full">
+      <nav className="bg-slate-300 text-white px-6 py-4 flex justify-around items-center w-full">
         <h1 className="text-xl font-bold" id="logo">
           Trend Sentry
         </h1>
