@@ -96,7 +96,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center pt-5"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center pt-5 hover:cursor-pointer"
               >
                 {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
               </button>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center"
+                  className="absolute inset-y-0 right-3 flex items-center hover:cursor-pointer"
                 >
                   {showConfirmPassword ? (
                     <HiEyeOff size={20} />
@@ -132,7 +132,7 @@ export default function RegisterPage() {
                 Registering
               </Button>
             ) : (
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full hover:cursor-pointer">
                 Register
               </Button>
             )}
@@ -142,7 +142,7 @@ export default function RegisterPage() {
             <Link href="/login" passHref>
               <Button
                 variant="link"
-                className="ml-2 font-semibold -translate-x-5 text-[1rem]"
+                className="ml-2 font-semibold -translate-x-5 text-[1rem] hover:cursor-pointer"
               >
                 Login
               </Button>

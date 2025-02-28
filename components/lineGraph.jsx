@@ -11,20 +11,32 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
+import LoadingScreen from "./loadingScreen";
 
 const EmotionGraph = () => {
-  const [data, setData] = useState(null); // Set initial data as null
+  const [data, setData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("");
   const [selectedEmotion, setSelectedEmotion] = useState("All");
+  const [selectedRange, setSelectedRange] = useState("1M");
 
   const emotions = ["Sadness", "Joy", "Anger", "Fear", "Love", "Surprise"];
+
+  // Time Range Options
+  const timeRanges = {
+    "1D": 1,
+    "1W": 7,
+    "1M": 30,
+    "3M": 90,
+    "6M": 180,
+    "1Y": 365,
+    "5Y": 5 * 365,
+  };
 
   // Generate Dummy Data (Client-Side Only)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const today = new Date();
-      const past30Days = Array.from({ length: 30 }, (_, index) => {
+      const past5years = Array.from({ length: 5 * 365 }, (_, index) => {
         const date = new Date(today);
         date.setDate(today.getDate() - index);
         return {
@@ -38,25 +50,19 @@ const EmotionGraph = () => {
         };
       }).reverse();
 
-      setData(past30Days);
-      setFilteredData(past30Days);
+      setData(past5years);
+      setFilteredData(past5years.slice(-timeRanges["1M"])); // Default: 1 month
     }
   }, []);
 
-  // Filter Data based on Date & Emotion Selection
+  // Update Data Based on Selected Time Range
   useEffect(() => {
-    if (!data) return; // Prevents errors when data is not yet loaded
+    if (!data) return;
+    const rangeDays = timeRanges[selectedRange];
+    setFilteredData(data.slice(-rangeDays));
+  }, [selectedRange, data]);
 
-    let filtered = data;
-
-    if (selectedDate) {
-      filtered = filtered.filter((entry) => entry.date === selectedDate);
-    }
-
-    setFilteredData(filtered);
-  }, [selectedDate, selectedEmotion, data]);
-
-  // Define a color map for emotions (consistent colors for both single & all selections)
+  // Define a color map for emotions
   const emotionColors = {
     Sadness: "#FF5733",
     Joy: "#33FF57",
@@ -77,14 +83,25 @@ const EmotionGraph = () => {
         📈 Emotion Trend Analysis
       </h2>
 
-      {/* Filters */}
+      {/* Time Range Filters */}
+      <div className="flex justify-center space-x-2 mb-4">
+        {Object.keys(timeRanges).map((range) => (
+          <button
+            key={range}
+            className={`px-4 py-2 border rounded-lg shadow-sm transition-all ${
+              selectedRange === range
+                ? "bg-blue-500 text-white"
+                : "bg-white hover:bg-gray-200"
+            }`}
+            onClick={() => setSelectedRange(range)}
+          >
+            {range}
+          </button>
+        ))}
+      </div>
+
+      {/* Emotion Filter */}
       <div className="flex flex-wrap gap-4 justify-center">
-        <input
-          type="date"
-          className="px-4 py-2 border rounded-lg shadow-sm"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-        />
         <select
           className="px-4 py-2 border rounded-lg shadow-sm"
           value={selectedEmotion}
@@ -119,7 +136,7 @@ const EmotionGraph = () => {
                       key={emotion}
                       type="monotone"
                       dataKey={emotion}
-                      stroke={emotionColors[emotion]} // Use consistent colors
+                      stroke={emotionColors[emotion]}
                       strokeWidth={2}
                       dot={{ r: 3 }}
                     />
@@ -137,7 +154,7 @@ const EmotionGraph = () => {
           </ResponsiveContainer>
         </motion.div>
       ) : (
-        <p className="text-center text-gray-600">Loading data...</p>
+        <LoadingScreen />
       )}
     </motion.div>
   );

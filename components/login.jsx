@@ -83,7 +83,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center pt-5"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center pt-5 hover:cursor-pointer"
                 >
                   {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
                 </button>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 Logging in
               </Button>
             ) : (
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full hover:cursor-pointer">
                 Login
               </Button>
             )}
@@ -104,7 +104,7 @@ export default function LoginPage() {
           <div className="w-full flex items-center justify-center">
             <Button
               variant="outline"
-              className="flex items-center  space-x-2 mt-[1rem]"
+              className="flex items-center  space-x-2 mt-[1rem] hover:cursor-pointer"
               onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             >
               <FcGoogle size={20} />

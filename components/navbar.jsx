@@ -52,7 +52,7 @@ export default function Navbar() {
     { name: "Home", path: "/dashboard" },
     { name: "Trending", path: "/dashboard/trending" },
     { name: "News", path: "/dashboard/news" },
-    { name: "Explore", path: "/dashboard/explore" },
+    { name: "Analyze", path: "/dashboard/explore" },
   ];
 
   if (loading) {
