@@ -29,8 +29,17 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Call your API to register the user (replace with actual logic)
-      console.log("Registering user:", { fullName, email, password });
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email: email,
+          password: password,
+        }),
+      });
 
       // Simulate success response
       setTimeout(() => {
