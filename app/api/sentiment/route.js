@@ -6,8 +6,8 @@ export async function GET() {
   try {
     await connectToDB();
 
-    // Fetch all sentiment records from the database
-    const sentiments = await Sentiment.find().sort({ time: 1 });
+    // Fetch latest 100 sentiment records, sorted by time (newest first)
+    const sentiments = await Sentiment.find().sort({ time: -1 });
 
     // Transform data for recharts
     const formattedData = sentiments.map((entry) => ({
@@ -16,7 +16,10 @@ export async function GET() {
       count: entry.count,
     }));
 
-    return NextResponse.json(formattedData);
+    // Add caching headers to optimize performance
+    return NextResponse.json(formattedData, {
+      headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate" },
+    });
   } catch (error) {
     console.error("Error fetching sentiment data:", error);
     return NextResponse.json(
